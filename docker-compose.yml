@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  roach1:
+    image: cockroachdb/cockroach:v22.2.9
+    command: start --insecure --join=roach1,roach2,roach3
+    networks:
+      - roachnet
+      - intranet
+  roach2:
+    image: cockroachdb/cockroach:v22.2.9
+    command: start --insecure --join=roach1,roach2,roach3
+    networks:
+      - roachnet
+      - public
+  roach-init:
+    image: cockroachdb/cockroach:v22.2.9
+    command: init --insecure --host=roach1
+    networks:
+      - roachnet
+    depends_on:
+      - roach1
+      - roach2
+
+  full:
+    image: learning/intranet:latest
+    networks:
+      - intranet
+    ports:
+      - 3000:3000
+    depends_on:
+      - roach-init
+    
+networks:
+  roachnet:
+  public:
+  intranet:
